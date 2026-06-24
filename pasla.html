@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Restaurant Finance Manager</title>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --sidebar-bg: #0f172a;
+            --main-bg: #f1f5f9;
+            --navy-banner: #1e293b;
+            --accent-gold: #f59e0b;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --white: #ffffff;
+            /* Card Border Colors from Image */
+            --br-green: #22c55e;
+            --br-red: #ef4444;
+            --br-blue: #3b82f6;
+            --br-purple: #a855f7;
+            --br-orange: #f97316;
+            --br-cyan: #06b6d4;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        body { background-color: var(--main-bg); display: flex; min-height: 100vh; color: var(--text-main); }
+
+        /* Sidebar Styling */
+        aside {
+            width: 240px;
+            background-color: var(--sidebar-bg);
+            color: #94a3b8;
+            height: 100vh;
+            position: fixed;
+            display: flex;
+            flex-direction: column;
+            z-index: 100;
+        }
+
+        .sidebar-brand {
+            padding: 25px 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .brand-logo {
+            background: var(--accent-gold);
+            color: var(--sidebar-bg);
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            font-weight: 800;
+            font-size: 1.2rem;
+        }
+
+        .brand-text h3 { color: #fff; font-size: 0.95rem; margin-bottom: 2px; }
+        .brand-text p { font-size: 0.7rem; }
+
+        .nav-label {
+            padding: 20px 20px 10px;
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 700;
+        }
+
+        .nav-menu { list-style: none; }
+        .nav-item { padding: 2px 15px; }
+        .nav-link {
+            display: flex;
+            align-items: center;
+            padding: 10px 15px;
+            color: #94a3b8;
+            text-decoration: none;
+            font-size: 0.85rem;
+            border-radius: 6px;
+            transition: 0.2s;
+        }
+        .nav-link i { width: 20px; margin-right: 12px; font-size: 1rem; }
+        .nav-link:hover, .nav-link.active {
+            background: rgba(245, 158, 11, 0.1);
+            color: var(--accent-gold);
+        }
+
+        .sidebar-footer { margin-top: auto; padding: 20px; font-size: 0.7rem; border-top: 1px solid #1e293b; }
+
+        /* Main Content */
+        main { margin-left: 240px; width: calc(100% - 240px); padding: 25px; }
+
+        /* Header Bar */
+        .top-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+        .header-title h2 { font-size: 1.25rem; font-weight: 700; }
+        .header-title p { font-size: 0.8rem; color: var(--text-muted); }
+        .header-right { display: flex; align-items: center; gap: 20px; }
+        .header-date { font-size: 0.85rem; color: var(--text-muted); }
+        .quick-actions { display: flex; gap: 10px; }
+        .btn-icon {
+            background: white; border: 1px solid #e2e8f0; width: 35px; height: 35px;
+            border-radius: 8px; display: flex; align-items: center; justify-content: center;
+            cursor: pointer; color: var(--text-muted);
+        }
+
+        /* Banner Card */
+        .welcome-banner {
+            background-color: var(--navy-banner);
+            border-radius: 16px;
+            padding: 30px;
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+        .banner-text h1 { font-size: 1.5rem; margin-bottom: 8px; }
+        .banner-text p { color: #94a3b8; font-size: 0.9rem; }
+        .date-badge {
+            background: var(--accent-gold);
+            color: var(--sidebar-bg);
+            padding: 8px 20px;
+            border-radius: 30px;
+            font-weight: 700;
+            font-size: 0.85rem;
+        }
+
+        /* Stats Grid - 5 Columns */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            position: relative;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+            border-left: 4px solid #eee;
+            border-top: 1px solid #eee;
+        }
+        .stat-card .icon-box {
+            background: #f8fafc;
+            width: 32px; height: 32px;
+            border-radius: 6px;
+            display: flex; align-items: center; justify-content: center;
+            margin-bottom: 12px; font-size: 0.9rem;
+        }
+        .stat-card h4 { font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+        .stat-card .value { font-size: 1.1rem; font-weight: 800; margin: 4px 0; }
+        .stat-card .sub-text { font-size: 0.7rem; color: #94a3b8; }
+
+        /* Colors for cards per image */
+        .card-green { border-left-color: var(--br-green); border-top-color: var(--br-green); }
+        .card-red { border-left-color: var(--br-red); border-top-color: var(--br-red); }
+        .card-blue { border-left-color: var(--br-blue); border-top-color: var(--br-blue); }
+        .card-purple { border-left-color: var(--br-purple); border-top-color: var(--br-purple); }
+        .card-orange { border-left-color: var(--br-orange); border-top-color: var(--br-orange); }
+        .card-cyan { border-left-color: var(--br-cyan); border-top-color: var(--br-cyan); }
+
+        /* Dashboard Bottom Layout */
+        .dashboard-row {
+            display: grid;
+            grid-template-columns: 1.5fr 1fr;
+            gap: 20px;
+        }
+
+        .content-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .card-header h3 { font-size: 0.9rem; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+
+        /* Table */
+        table { width: 100%; border-collapse: collapse; }
+        th { text-align: left; font-size: 0.7rem; color: var(--text-muted); padding: 10px; border-bottom: 1px solid #f1f5f9; text-transform: uppercase; }
+        td { padding: 12px 10px; font-size: 0.8rem; border-bottom: 1px solid #f1f5f9; }
+        
+        .badge { padding: 4px 10px; border-radius: 4px; font-size: 0.7rem; font-weight: 600; }
+        .badge-cash { background: #dcfce7; color: #166534; }
+        .badge-expense { background: #fee2e2; color: #991b1b; }
+        .view-all { background: #f8fafc; border: 1px solid #e2e8f0; padding: 5px 12px; border-radius: 6px; font-size: 0.75rem; cursor: pointer; }
+
+        /* Page Management */
+        .page-section { display: none; }
+        .page-section.active { display: block; animation: fadeIn 0.3s; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        /* Form Styling */
+        .form-container { max-width: 600px; }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; font-size: 0.85rem; font-weight: 600; }
+        .form-group input, .form-group select { width: 100%; padding: 10px; border: 1px solid #e2e8f0; border-radius: 8px; outline: none; }
+        .btn-save { background: var(--accent-gold); color: var(--sidebar-bg); border: none; padding: 12px 25px; border-radius: 8px; font-weight: 700; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+    <!-- SIDEBAR -->
+    <aside>
+        <div class="sidebar-brand">
+            <div class="brand-logo">R</div>
+            <div class="brand-text">
+                <h3>Restro Manager</h3>
+                <p>Finance System</p>
+            </div>
+        </div>
+
+        <div class="nav-label">Main</div>
+        <ul class="nav-menu">
+            <li class="nav-item"><a href="#" class="nav-link active" onclick="navigate('dashboard', this)"><i class="fas fa-th-large"></i> Dashboard</a></li>
+            <li class="nav-item"><a href="#" class="nav-link" onclick="navigate('transactions', this)"><i class="fas fa-exchange-alt"></i> Transactions</a></li>
+        </ul>
+
+        <div class="nav-label">Finance</div>
+        <ul class="nav-menu">
+            <li class="nav-item"><a href="#" class="nav-link" onclick="navigate('add-income', this)"><i class="fas fa-file-invoice-dollar"></i> Add Income</a></li>
+            <li class="nav-item"><a href="#" class="nav-link" onclick="navigate('add-expense', this)"><i class="fas fa-file-invoice"></i> Add Expense</a></li>
+        </ul>
+
+        <div class="nav-label">Analytics</div>
+        <ul class="nav-menu">
+            <li class="nav-item"><a href="#" class="nav-link" onclick="navigate('reports', this)"><i class="fas fa-clipboard-list"></i> Reports</a></li>
+            <li class="nav-item"><a href="#" class="nav-link" onclick="navigate('charts', this)"><i class="fas fa-chart-bar"></i> Charts</a></li>
+        </ul>
+
+        <div class="nav-label">Settings</div>
+        <ul class="nav-menu">
+            <li class="nav-item"><a href="#" class="nav-link" onclick="navigate('profile', this)"><i class="fas fa-store"></i> Restro Profile</a></li>
+            <li class="nav-item"><a href="#" class="nav-link" onclick="navigate('data', this)"><i class="fas fa-database"></i> Data Management</a></li>
+        </ul>
+
+        <div class="sidebar-footer">
+            Restro Finance Manager v1.0
+        </div>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main>
+        <header class="top-header">
+            <div class="header-title">
+                <h2 id="page-display-title">Dashboard</h2>
+                <p id="page-display-sub">Overview of your restaurant finances</p>
+            </div>
+            <div class="header-right">
+                <div class="header-date">Wed, Jun 24, 2026</div>
+                <div class="quick-actions">
+                    <button class="btn-icon" title="Quick Income"><i class="fas fa-plus-circle" style="color: var(--br-green);"></i></button>
+                    <button class="btn-icon" title="Quick Expense"><i class="fas fa-minus-circle" style="color: var(--br-red);"></i></button>
+                </div>
+            </div>
+        </header>
+
+        <!-- DASHBOARD PAGE -->
+        <div id="dashboard" class="page-section active">
+            <div class="welcome-banner">
+                <div class="banner-text">
+                    <h1>Good Afternoon, Owner! 👋</h1>
+                    <p>Here's a snapshot of your restaurant's financial health today.</p>
+                </div>
+                <div class="date-badge">Wednesday, June 24</div>
+            </div>
+
+            <!-- Stats Grid 5x3 as per image -->
+            <div class="stats-grid">
+                <!-- Row 1 -->
+                <div class="stat-card card-green">
+                    <div class="icon-box"><i class="fas fa-wallet" style="color:var(--br-green)"></i></div>
+                    <h4>Today's Income</h4>
+                    <div class="value">NPR 12,500.00</div>
+                    <div class="sub-text">Today</div>
+                </div>
+                <div class="stat-card card-red">
+                    <div class="icon-box"><i class="fas fa-money-bill-wave" style="color:var(--br-red)"></i></div>
+                    <h4>Today's Expenses</h4>
+                    <div class="value">NPR 4,200.00</div>
+                    <div class="sub-text">Today</div>
+                </div>
+                <div class="stat-card card-blue">
+                    <div class="icon-box"><i class="fas fa-chart-line" style="color:var(--br-blue)"></i></div>
+                    <h4>Today's Profit</h4>
+                    <div class="value">NPR 8,300.00</div>
+                    <div class="sub-text">Today</div>
+                </div>
+                <div class="stat-card card-cyan">
+                    <div class="icon-box"><i class="fas fa-calendar-check" style="color:var(--br-cyan)"></i></div>
+                    <h4>Monthly Income</h4>
+                    <div class="value">NPR 345,000.00</div>
+                    <div class="sub-text">This Month</div>
+                </div>
+                <div class="stat-card card-red">
+                    <div class="icon-box"><i class="fas fa-file-invoice" style="color:var(--br-red)"></i></div>
+                    <h4>Monthly Expenses</h4>
+                    <div class="value">NPR 110,000.00</div>
+                    <div class="sub-text">This Month</div>
+                </div>
+
+                <!-- Row 2 -->
+                <div class="stat-card card-blue">
+                    <div class="icon-box"><i class="fas fa-piggy-bank" style="color:var(--br-blue)"></i></div>
+                    <h4>Monthly Profit</h4>
+                    <div class="value">NPR 235,000.00</div>
+                    <div class="sub-text">This Month</div>
+                </div>
+                <div class="stat-card card-orange">
+                    <div class="icon-box"><i class="fas fa-money-bill-alt" style="color:var(--br-orange)"></i></div>
+                    <h4>Cash Income</h4>
+                    <div class="value">NPR 85,000.00</div>
+                    <div class="sub-text">All Time</div>
+                </div>
+                <div class="stat-card card-red">
+                    <div class="icon-box"><i class="fas fa-hand-holding-usd" style="color:var(--br-red)"></i></div>
+                    <h4>Cash Expenses</h4>
+                    <div class="value">NPR 12,000.00</div>
+                    <div class="sub-text">All Time</div>
+                </div>
+                <div class="stat-card card-blue">
+                    <div class="icon-box"><i class="fas fa-atm" style="color:var(--br-blue)"></i></div>
+                    <h4>Cash Balance</h4>
+                    <div class="value">NPR 73,000.00</div>
+                    <div class="sub-text">All Time</div>
+                </div>
+                <div class="stat-card card-purple">
+                    <div class="icon-box"><i class="fas fa-globe" style="color:var(--br-purple)"></i></div>
+                    <h4>Online Income</h4>
+                    <div class="value">NPR 260,000.00</div>
+                    <div class="sub-text">All Time</div>
+                </div>
+
+                <!-- Row 3 -->
+                <div class="stat-card card-red">
+                    <div class="icon-box"><i class="fas fa-credit-card" style="color:var(--br-red)"></i></div>
+                    <h4>Online Expenses</h4>
+                    <div class="value">NPR 98,000.00</div>
+                    <div class="sub-text">All Time</div>
+                </div>
+                <div class="stat-card card-blue">
+                    <div class="icon-box"><i class="fas fa-university" style="color:var(--br-blue)"></i></div>
+                    <h4>Online Balance</h4>
+                    <div class="value">NPR 162,000.00</div>
+                    <div class="sub-text">All Time</div>
+                </div>
+                <div class="stat-card card-orange">
+                    <div class="icon-box"><i class="fas fa-vault" style="color:var(--br-orange)"></i></div>
+                    <h4>Total Balance</h4>
+                    <div class="value">NPR 235,000.00</div>
+                    <div class="sub-text">Cash + Online</div>
+                </div>
+                <div class="stat-card card-cyan">
+                    <div class="icon-box"><i class="fas fa-percentage" style="color:var(--br-cyan)"></i></div>
+                    <h4>Overall Profit/Loss</h4>
+                    <div class="value">NPR 235,000.00</div>
+                    <div class="sub-text">All Time</div>
+                </div>
+            </div>
+
+            <div class="dashboard-row">
+                <!-- Transactions Table -->
+                <div class="content-card">
+                    <div class="card-header">
+                        <h3><i class="fas fa-list" style="color: var(--accent-gold)"></i> Recent Transactions</h3>
+                        <button class="view-all">View All</button>
+                    </div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Category</th>
+                                <th>Method</th>
+                                <th>Type</th>
+                                <th>Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>24 Jun 2026</td>
+                                <td>Food & Beverage</td>
+                                <td><span class="badge badge-cash"><i class="fas fa-money-bill"></i> Cash</span></td>
+                                <td style="color: var(--br-red); font-weight: 600;">expense</td>
+                                <td style="color: var(--br-red); font-weight: 700;">NPR 3,000.00</td>
+                            </tr>
+                            <tr>
+                                <td>24 Jun 2026</td>
+                                <td>Dinner Sales</td>
+                                <td><span class="badge badge-cash" style="background:#e0f2fe; color:#0369a1;"><i class="fas fa-mobile-alt"></i> Online</span></td>
+                                <td style="color: var(--br-green); font-weight: 600;">income</td>
+                                <td style="color: var(--br-green); font-weight: 700;">NPR 8,500.00</td>
+                            </tr>
+                            <tr>
+                                <td>23 Jun 2026</td>
+                                <td>Kitchen Supplies</td>
+                                <td><span class="badge badge-cash"><i class="fas fa-money-bill"></i> Cash</span></td>
+                                <td style="color: var(--br-red); font-weight: 600;">expense</td>
+                                <td style="color: var(--br-red); font-weight: 700;">NPR 1,200.00</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Small Chart -->
+                <div class="content-card">
+                    <div class="card-header">
+                        <h3><i class="fas fa-chart-pie" style="color: var(--accent-gold)"></i> Income vs Expense</h3>
+                    </div>
+                    <canvas id="miniChart" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- ADD INCOME PAGE -->
+        <div id="add-income" class="page-section">
+            <div class="content-card form-container">
+                <h3>Record Restaurant Sales</h3>
+                <form onsubmit="saveEntry(event, 'income')">
+                    <div class="form-group">
+                        <label>Date</label>
+                        <input type="date" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Category</label>
+                        <select>
+                            <option>Breakfast Sales</option>
+                            <option>Lunch Sales</option>
+                            <option>Dinner Sales</option>
+                            <option>Home Delivery</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Payment Method</label>
+                        <select>
+                            <option>Cash</option>
+                            <option>FonePay / QR</option>
+                            <option>Bank Transfer</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Amount (NPR)</label>
+                        <input type="number" step="0.01" placeholder="0.00" required>
+                    </div>
+                    <button type="submit" class="btn-save">Save Income</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- OTHER PAGES PLACEHOLDERS -->
+        <div id="add-expense" class="page-section">
+            <div class="content-card form-container">
+                <h3>Record Expense</h3>
+                <form onsubmit="saveEntry(event, 'expense')">
+                    <div class="form-group">
+                        <label>Category</label>
+                        <select>
+                            <option>Raw Ingredients</option>
+                            <option>Staff Wages</option>
+                            <option>Rent/Utilities</option>
+                            <option>Maintenance</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Amount (NPR)</label>
+                        <input type="number" step="0.01" required>
+                    </div>
+                    <button type="submit" class="btn-save" style="background: var(--br-red); color: white;">Save Expense</button>
+                </form>
+            </div>
+        </div>
+
+        <div id="profile" class="page-section">
+            <div class="content-card">
+                <h3>Restaurant Profile Settings</h3>
+                <div class="form-group" style="margin-top:20px;">
+                    <label>Restaurant Name</label>
+                    <input type="text" value="Grand Horizon Bistro">
+                </div>
+                <div class="form-group">
+                    <label>Currency Symbol</label>
+                    <input type="text" value="NPR">
+                </div>
+                <button class="btn-save">Update Profile</button>
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+        // Navigation Script
+        function navigate(sectionId, element) {
+            // Update UI
+            document.querySelectorAll('.page-section').forEach(section => {
+                section.classList.remove('active');
+            });
+           const pageElement = document.getElementById("dashboard");
+if (pageElement) {
+    pageElement.classList.add("active");
+}
+
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.classList.remove('active');
+            });
+            element.classList.add('active');
+
+            // Update Titles
+            const titleMap = {
+                'dashboard': ['Dashboard', 'Overview of your restaurant finances'],
+                'transactions': ['Transactions', 'Detailed financial logs'],
+                'add-income': ['Add Income', 'Record daily sales revenue'],
+                'add-expense': ['Add Expense', 'Record costs and bills'],
+                'reports': ['Reports', 'Monthly and Annual summaries'],
+                'charts': ['Visual Analytics', 'Data visualization'],
+                'profile': ['Profile', 'Restaurant information settings'],
+                'data': ['Data Management', 'Backup and export settings']
+            };
+
+            document.getElementById('page-display-title').innerText = titleMap[sectionId][0];
+            document.getElementById('page-display-sub').innerText = titleMap[sectionId][1];
+        }
+
+        // Form Handling
+        function saveEntry(e, type) {
+            e.preventDefault();
+            alert(type.toUpperCase() + ' successfully recorded!');
+            navigate('dashboard', document.querySelector('.nav-link'));
+        }
+
+        // Chart.js implementation
+        const ctx = document.getElementById('miniChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['Jun 20', 'Jun 21', 'Jun 22', 'Jun 23', 'Jun 24'],
+                datasets: [{
+                    label: 'Income',
+                    data: [12000, 15000, 8000, 14000, 12500],
+                    backgroundColor: '#22c55e',
+                    borderRadius: 4
+                }, {
+                    label: 'Expense',
+                    data: [5000, 4000, 9000, 3000, 4200],
+                    backgroundColor: '#ef4444',
+                    borderRadius: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 10 } } }
+                },
+                scales: {
+                    y: { beginAtZero: true, grid: { display: false }, ticks: { font: { size: 9 } } },
+                    x: { grid: { display: false }, ticks: { font: { size: 9 } } }
+                }
+            }
+        });
+    </script>
+</body>
+</html>
